@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RupeeTrack</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icon.png">
+</head>
+<body>
+  <div id="landing">
+    <h1>₹ RupeeTrack</h1>
+    <input type="password" id="pinInput" placeholder="Enter 4-digit PIN" maxlength="4">
+    <button onclick="login()">Login</button>
+    <button onclick="showForgotPin()">Forgot PIN</button>
+    <p>Zero maintenance. All data stored only on your device.<br>No tracking. No server.</p>
+  </div>
+
+  <div id="forgotScreen" class="hidden">
+    <h2>Security Question</h2>
+    <p id="securityQuestion"></p>
+    <input type="text" id="securityAnswer" placeholder="Your answer">
+    <button onclick="verifySecurity()">Submit</button>
+    <button onclick="backToLogin()">Back</button>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <h2>Dashboard</h2>
+    <button onclick="showSection('monthly')">Monthly Utilities</button>
+    <button onclick="showSection('annual')">Annual Bills</button>
+    <button onclick="showSection('credit')">Credit Cards</button>
+    <button onclick="showSection('invest')">Investments</button>
+    
+    <button onclick="deleteAllData()">Delete All Data</button>
+    <button onclick="installApp()">Install App</button>
+  </div>
+
+  <div id="sections" class="hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
