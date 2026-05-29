@@ -80,4 +80,4 @@ rupeetrack/
 
 ---
 
-*Built with ❤ and ₹ — zero dependencies, zero cost, 100% yours.*
+*Built with ❤ and ₹ — zero dependencies, zero cost, 100% yours. *
