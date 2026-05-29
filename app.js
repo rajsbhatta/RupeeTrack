@@ -1,6 +1,6 @@
 /* ============================================================
    RupeeTrack – app.js
-   All data stored in localStorage. Zero external dependencies.
+   All data stored in localStorage. Zero external dependency.
    ============================================================ */
 
 'use strict';
