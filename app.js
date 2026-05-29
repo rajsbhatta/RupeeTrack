@@ -1,6 +1,6 @@
 /* ============================================================
    RupeeTrack – app.js
-   All data stored in localStorage. Zero external dependency.
+   All data stored in localStorage. Zero external dependencies.
    ============================================================ */
 
 'use strict';
@@ -192,7 +192,7 @@ window.completeSetup = function() {
   const a = document.getElementById('setup-sq-answer').value.trim();
   if (!q) return showToast('Please select a security question.', 'error');
   if (a.length < 2) return showToast('Please enter your security answer.', 'error');
-  save(KEYS.pin, setupPinBuffer);
+  localStorage.setItem(KEYS.pin, setupPinBuffer);
   save(KEYS.sq, { question: q, answer: a.toLowerCase() });
   showAppScreen();
   showToast('Welcome to RupeeTrack! 🎉', 'success');
@@ -1087,7 +1087,7 @@ window.changePIN = function() {
   if (current !== stored) return showToast('Current PIN is incorrect.', 'error');
   if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) return showToast('PIN must be 4 digits.', 'error');
   if (newPin !== confirm) return showToast('PINs do not match.', 'error');
-  save(KEYS.pin, newPin);
+  localStorage.setItem(KEYS.pin, newPin);
   closeModal('modal-change-pin');
   document.getElementById('cp-current').value = '';
   document.getElementById('cp-new').value = '';
