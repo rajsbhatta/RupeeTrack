@@ -140,15 +140,23 @@ function buildNumpad(containerId, handler) {
   const el = document.getElementById(containerId);
   if (!el) return;
   const layout = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  el.innerHTML = layout.map(k => {
-    if (k === '') return `<button class="numpad-btn empty"></button>`;
-    if (k === '⌫') return `<button class="numpad-btn backspace" onclick="${handler.name}('⌫')">${k}</button>`;
-    return `<button class="numpad-btn" onclick="${handler.name}('${k}')">${k}</button>`;
-  }).join('');
+  el.innerHTML = '';
+  layout.forEach(k => {
+    const btn = document.createElement('button');
+    if (k === '') {
+      btn.className = 'numpad-btn empty';
+      btn.disabled = true;
+    } else {
+      btn.className = 'numpad-btn' + (k === '⌫' ? ' backspace' : '');
+      btn.textContent = k;
+      btn.type = 'button';
+      btn.addEventListener('click', () => handler(k));
+    }
+    el.appendChild(btn);
+  });
 }
 
-// Make handlers global
-window.handleSetupPin = function(key) {
+function handleSetupPin(key) {
   if (key === '⌫') { setupPinBuffer = setupPinBuffer.slice(0,-1); }
   else if (setupPinBuffer.length < 4) { setupPinBuffer += key; }
   renderPinDots('setup-pin-display', setupPinBuffer.length);
@@ -158,9 +166,9 @@ window.handleSetupPin = function(key) {
       document.getElementById('setup-step-2').style.display = 'block';
     }, 250);
   }
-};
+}
 
-window.handleSetupConfirm = function(key) {
+function handleSetupConfirm(key) {
   if (key === '⌫') { setupConfirmBuffer = setupConfirmBuffer.slice(0,-1); }
   else if (setupConfirmBuffer.length < 4) { setupConfirmBuffer += key; }
   renderPinDots('setup-confirm-display', setupConfirmBuffer.length);
@@ -177,7 +185,7 @@ window.handleSetupConfirm = function(key) {
       }
     }, 250);
   }
-};
+}
 
 window.completeSetup = function() {
   const q = document.getElementById('setup-sq-question').value;
@@ -191,7 +199,7 @@ window.completeSetup = function() {
 };
 
 // ===== LOGIN =====
-window.handleLoginPin = function(key) {
+function handleLoginPin(key) {
   if (key === '⌫') { loginPinBuffer = loginPinBuffer.slice(0,-1); }
   else if (loginPinBuffer.length < 4) { loginPinBuffer += key; }
   renderPinDots('login-pin-display', loginPinBuffer.length);
@@ -209,7 +217,7 @@ window.handleLoginPin = function(key) {
       }
     }, 250);
   }
-};
+}
 
 function renderPinDots(containerId, filledCount) {
   const el = document.getElementById(containerId);
