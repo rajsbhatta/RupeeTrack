@@ -1,43 +1,1559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RupeeTrack</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="icon.png">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="description" content="RupeeTrack – Your private, offline personal finance manager. Bills, investments, reminders. All data stays on your device."/>
+<meta name="theme-color" content="#c9a84c"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RupeeTrack"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="manifest" href="manifest.json"/>
+<title>RupeeTrack – Personal Finance Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ===== CSS VARIABLES & THEMES ===== */
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --gold-dark: #a07830;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.18);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.28);
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #0f1117;
+  --bg2: #181b24;
+  --bg3: #1e2130;
+  --bg4: #252840;
+  --card: #1a1d2b;
+  --border: rgba(201,168,76,0.18);
+  --text: #e8e6df;
+  --text2: #a09880;
+  --text3: #6b6455;
+  --input-bg: #13151f;
+  --modal-bg: #181b24;
+}
+
+[data-theme="light"] {
+  --bg: #f5f0e8;
+  --bg2: #ede8dc;
+  --bg3: #e4ddd0;
+  --bg4: #d9d1c0;
+  --card: #faf7f2;
+  --border: rgba(160,120,48,0.22);
+  --text: #1a1510;
+  --text2: #5a4e38;
+  --text3: #9a8c74;
+  --input-bg: #fff;
+  --modal-bg: #faf7f2;
+}
+
+[data-theme="system"] {
+  --bg: #0f1117;
+  --bg2: #181b24;
+  --bg3: #1e2130;
+  --bg4: #252840;
+  --card: #1a1d2b;
+  --border: rgba(201,168,76,0.18);
+  --text: #e8e6df;
+  --text2: #a09880;
+  --text3: #6b6455;
+  --input-bg: #13151f;
+  --modal-bg: #181b24;
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg: #f5f0e8;
+    --bg2: #ede8dc;
+    --bg3: #e4ddd0;
+    --bg4: #d9d1c0;
+    --card: #faf7f2;
+    --border: rgba(160,120,48,0.22);
+    --text: #1a1510;
+    --text2: #5a4e38;
+    --text3: #9a8c74;
+    --input-bg: #fff;
+    --modal-bg: #faf7f2;
+  }
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+button { font-family: var(--font-body); cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: var(--font-body); }
+a { color: var(--gold); text-decoration: none; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ===== SCREENS ===== */
+.screen { display: none; min-height: 100dvh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ===== LANDING / LOGIN PAGE ===== */
+#screen-login {
+  background: var(--bg);
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+#screen-login::before {
+  content: '₹';
+  position: absolute;
+  font-size: 60vw;
+  font-family: var(--font-display);
+  color: var(--gold);
+  opacity: 0.03;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.logo-symbol {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+  flex-shrink: 0;
+}
+.app-name {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.app-tagline {
+  font-size: 0.78rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.login-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}
+
+.login-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+}
+
+/* PIN Input */
+.pin-row {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.pin-dot {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gold);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.pin-dot.filled { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+.pin-dot.active { border-color: var(--gold-light); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(201,168,76,0.15); } 50% { box-shadow: 0 0 0 5px rgba(201,168,76,0.28); } }
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.numpad-btn {
+  height: 52px;
+  border-radius: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.numpad-btn:hover { background: var(--bg4); border-color: var(--gold); }
+.numpad-btn:active { transform: scale(0.94); background: var(--gold); color: #fff; }
+.numpad-btn.backspace { font-size: 1rem; }
+.numpad-btn.empty { opacity: 0; pointer-events: none; }
+
+.login-link {
+  font-size: 0.83rem;
+  color: var(--text3);
+  text-align: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color var(--transition);
+}
+.login-link:hover { color: var(--gold); }
+
+.privacy-note {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg3);
+  border-radius: 10px;
+  border-left: 3px solid var(--gold);
+  font-size: 0.78rem;
+  color: var(--text2);
+  line-height: 1.5;
+}
+.privacy-note strong { color: var(--gold); }
+
+/* Theme selector on login */
+.theme-row {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+.theme-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  background: var(--bg3);
+  transition: all var(--transition);
+}
+.theme-btn.active, .theme-btn:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+
+/* ===== SETUP (first time) ===== */
+.setup-step { animation: slideUp 0.4s both; }
+.form-group { margin-bottom: 1rem; }
+label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text2); margin-bottom: 0.4rem; }
+input[type=text], input[type=number], input[type=date], select, textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+select option { background: var(--bg2); color: var(--text); }
+textarea { resize: vertical; min-height: 70px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(201,168,76,0.35);
+}
+.btn-primary:hover { box-shadow: 0 5px 20px rgba(201,168,76,0.5); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.btn-danger {
+  background: rgba(220,50,50,0.1);
+  border: 1px solid rgba(220,50,50,0.3);
+  color: #e05555;
+}
+.btn-danger:hover { background: rgba(220,50,50,0.2); }
+.btn-ghost { color: var(--text2); }
+.btn-ghost:hover { color: var(--gold); }
+.btn-sm { padding: 0.45rem 0.85rem; font-size: 0.8rem; }
+.btn-full { width: 100%; }
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 8px; }
+
+/* ===== MAIN APP LAYOUT ===== */
+#screen-app {
+  flex-direction: column;
+  overflow: hidden;
+  height: 100dvh;
+}
+.app-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.25rem;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.header-logo {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gold);
+  flex: 1;
+}
+.header-actions { display: flex; gap: 0.4rem; align-items: center; }
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar navigation */
+.sidebar {
+  width: 230px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 1rem 0;
+}
+
+.nav-section-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text3);
+  padding: 0.6rem 1.2rem 0.3rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all var(--transition);
+  border-radius: 0;
+  position: relative;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(201,168,76,0.1); color: var(--gold); font-weight: 600; }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--gold);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: rgba(220,80,80,0.15);
+  color: #e05555;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  padding: 0.1rem 0.45rem;
+  font-weight: 600;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.3s both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.page-subtitle {
+  font-size: 0.83rem;
+  color: var(--text3);
+  margin-top: 0.2rem;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.card:hover { border-color: var(--gold); box-shadow: var(--shadow-lg); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+.card-title { font-size: 1rem; font-weight: 600; color: var(--text); }
+.card-sub { font-size: 0.78rem; color: var(--text3); margin-top: 0.15rem; }
+.card-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+.info-item { }
+.info-label { font-size: 0.7rem; color: var(--text3); margin-bottom: 0.1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.info-value { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+.info-value.amount { color: var(--gold); font-weight: 600; }
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.badge-due { background: rgba(220,80,80,0.15); color: #e05555; }
+.badge-upcoming { background: rgba(255,165,0,0.15); color: #f59e0b; }
+.badge-ok { background: rgba(34,197,94,0.15); color: #22c55e; }
+.badge-info { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+/* Summary stats on dashboard */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+.stat-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+.stat-label { font-size: 0.75rem; color: var(--text3); margin-bottom: 0.2rem; }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--gold); font-family: var(--font-display); }
+.stat-sub { font-size: 0.73rem; color: var(--text3); margin-top: 0.15rem; }
+
+/* Alerts section */
+.alerts-section { margin-bottom: 1.5rem; }
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+.alert-item.urgent { background: rgba(220,80,80,0.08); border-color: rgba(220,80,80,0.3); }
+.alert-item.warning { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
+.alert-icon { font-size: 1.1rem; flex-shrink: 0; }
+.alert-text { flex: 1; font-size: 0.85rem; color: var(--text); }
+.alert-text small { display: block; color: var(--text3); font-size: 0.75rem; margin-top: 0.1rem; }
+
+/* ===== FORM / MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--modal-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.75rem;
+  max-width: 540px;
+  width: 100%;
+  max-height: 88dvh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(12px); } to { opacity: 1; transform: none; } }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.modal-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.modal-footer {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 480px) { .form-row, .form-row.three { grid-template-columns: 1fr; } }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text3);
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--text2); margin-bottom: 0.4rem; }
+.empty-sub { font-size: 0.83rem; }
+
+/* Mobile nav */
+.mobile-nav {
+  display: none;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 0.4rem 0;
+  flex-shrink: 0;
+}
+.mobile-nav-items {
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  scrollbar-width: none;
+}
+.mobile-nav-items::-webkit-scrollbar { display: none; }
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  transition: color var(--transition);
+}
+.mobile-nav-item.active { color: var(--gold); }
+.mobile-nav-item .mn-icon { font-size: 1.1rem; }
+.mobile-nav-badge {
+  position: absolute;
+  top: 2px; right: 4px;
+  background: #e05555;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+.toast {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s both;
+  max-width: 320px;
+  text-align: center;
+}
+.toast.success { border-color: rgba(34,197,94,0.4); }
+.toast.error { border-color: rgba(220,80,80,0.4); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(12px); } }
+
+/* Install button */
+.install-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(201,168,76,0.3);
+  transition: all var(--transition);
+}
+.install-btn:hover { box-shadow: 0 4px 16px rgba(201,168,76,0.5); transform: translateY(-1px); }
+
+/* Section title within pages */
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+}
+.section-title:first-child { margin-top: 0; }
+
+/* Investment type grid */
+.inv-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.inv-type-btn {
+  padding: 0.6rem 0.5rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg3);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+}
+.inv-type-btn:hover, .inv-type-btn.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  color: var(--gold);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .mobile-nav { display: block; }
+  .main-content { padding: 1rem; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .login-card { padding: 1.75rem 1.25rem; }
+}
+
+/* Utility */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 0.75rem; }
+.mt-sm { margin-top: 0.5rem; }
+.mt-md { margin-top: 1rem; }
+.text-center { text-align: center; }
+.text-gold { color: var(--gold); }
+.text-danger { color: #e05555; }
+.text-sm { font-size: 0.82rem; }
+.text-xs { font-size: 0.72rem; }
+.text-muted { color: var(--text3); }
+.font-bold { font-weight: 700; }
+.w-full { width: 100%; }
+hr.divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+</style>
 </head>
-<body>
-  <div id="landing">
-    <h1>₹ RupeeTrack</h1>
-    <input type="password" id="pinInput" placeholder="Enter 4-digit PIN" maxlength="4">
-    <button onclick="login()">Login</button>
-    <button onclick="showForgotPin()">Forgot PIN</button>
-    <p>Zero maintenance. All data stored only on your device.<br>No tracking. No server.</p>
+<body data-theme="system">
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="login-card">
+    <div class="app-logo">
+      <div class="logo-symbol">₹</div>
+      <div>
+        <div class="app-name">RupeeTrack</div>
+        <div class="app-tagline">Personal Finance Vault</div>
+      </div>
+    </div>
+
+    <div class="login-divider"></div>
+
+    <!-- Setup flow (first time) -->
+    <div id="setup-flow" style="display:none;">
+      <div id="setup-step-1" class="setup-step">
+        <div class="login-heading">🔐 Create your 4-digit PIN</div>
+        <p class="text-sm text-muted" style="margin-bottom:1rem;">This PIN secures your data locally on this device.</p>
+        <div class="pin-row" id="setup-pin-display"></div>
+        <div class="numpad" id="setup-numpad"></div>
+      </div>
+      <div id="setup-step-2" class="setup-step" style="display:none;">
+        <div class="login-heading">🔄 Confirm your PIN</div>
+        <div class="pin-row" id="setup-confirm-display"></div>
+        <div class="numpad" id="setup-confirm-numpad"></div>
+      </div>
+      <div id="setup-step-3" class="setup-step" style="display:none;">
+        <div class="login-heading">🛡 Security Question</div>
+        <p class="text-sm text-muted" style="margin-bottom:1rem;">Used to recover access if you forget your PIN.</p>
+        <div class="form-group">
+          <label>Select a question</label>
+          <select id="setup-sq-question">
+            <option value="">— Choose —</option>
+            <option>What is your mother's maiden name?</option>
+            <option>What was the name of your first pet?</option>
+            <option>What city were you born in?</option>
+            <option>What is your favourite childhood memory?</option>
+            <option>What was your first school's name?</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Your answer</label>
+          <input type="text" id="setup-sq-answer" placeholder="Answer (case-insensitive)"/>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="completeSetup()">Get Started →</button>
+      </div>
+    </div>
+
+    <!-- Login flow -->
+    <div id="login-flow">
+      <div class="login-heading" id="login-heading">Enter your PIN</div>
+      <div class="pin-row" id="login-pin-display"></div>
+      <div class="numpad" id="login-numpad"></div>
+      <div class="login-link" onclick="showForgotPin()">Forgot PIN?</div>
+    </div>
+
+    <!-- Forgot PIN -->
+    <div id="forgot-flow" style="display:none;">
+      <div class="login-heading">Reset PIN</div>
+      <div class="form-group">
+        <label id="forgot-question-label">Security question</label>
+        <input type="text" id="forgot-answer" placeholder="Your answer"/>
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-secondary btn-full" onclick="cancelForgot()">Back</button>
+        <button class="btn btn-primary btn-full" onclick="verifySecurityAnswer()">Verify</button>
+      </div>
+    </div>
+
+    <div class="privacy-note">
+      <strong>🔒 100% Private.</strong> RupeeTrack stores all your data <strong>only on this device</strong>. No servers, no cloud, no data collection. Your financial data never leaves your phone or computer.
+    </div>
+
+    <div class="theme-row">
+      <button class="theme-btn active" onclick="setTheme('system',this)">Auto</button>
+      <button class="theme-btn" onclick="setTheme('light',this)">☀ Light</button>
+      <button class="theme-btn" onclick="setTheme('dark',this)">🌙 Dark</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP SCREEN ===== -->
+<div id="screen-app" class="screen">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-logo">₹ RupeeTrack</div>
+    <div class="header-actions">
+      <button class="btn btn-icon btn-secondary" onclick="cycleTheme()" title="Toggle theme" style="font-size:1rem;">🎨</button>
+      <button id="install-btn-header" class="install-btn" style="display:none;" onclick="installApp()">⬇ Install</button>
+      <button class="btn btn-icon btn-secondary" onclick="confirmLogout()" title="Lock app" style="font-size:1rem;">🔒</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="nav-section-title">Overview</div>
+      <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span>Dashboard</button>
+      <button class="nav-item" onclick="showPage('alerts',this)" id="nav-alerts"><span class="nav-icon">🔔</span>Alerts <span class="nav-badge" id="alert-count" style="display:none">0</span></button>
+
+      <div class="nav-section-title">Bills & Utilities</div>
+      <button class="nav-item" onclick="showPage('monthly-bills',this)"><span class="nav-icon">📅</span>Monthly Bills</button>
+      <button class="nav-item" onclick="showPage('annual-bills',this)"><span class="nav-icon">📆</span>Annual Bills</button>
+      <button class="nav-item" onclick="showPage('credit-cards',this)"><span class="nav-icon">💳</span>Credit Cards</button>
+
+      <div class="nav-section-title">Investments</div>
+      <button class="nav-item" onclick="showPage('investments',this)"><span class="nav-icon">📈</span>Investments</button>
+      <button class="nav-item" onclick="showPage('insurance',this)"><span class="nav-icon">🛡</span>Insurance</button>
+
+      <div class="nav-section-title">Settings</div>
+      <button class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙</span>Settings</button>
+      <button class="nav-item" onclick="showPage('backup',this)"><span class="nav-icon">💾</span>Backup & Restore</button>
+    </nav>
+
+    <!-- Content -->
+    <main class="main-content" id="main-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Dashboard</div>
+            <div class="page-subtitle" id="dash-greeting">Good morning!</div>
+          </div>
+        </div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="alerts-section">
+          <div class="section-title">⚠ Upcoming Payments & Reminders</div>
+          <div id="dash-alerts"></div>
+        </div>
+        <div>
+          <div class="section-title">💳 Recent Activity</div>
+          <div id="dash-recent"></div>
+        </div>
+      </div>
+
+      <!-- ===== ALERTS PAGE ===== -->
+      <div class="page" id="page-alerts">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Alerts & Reminders</div>
+            <div class="page-subtitle">All upcoming dues and reminders</div>
+          </div>
+        </div>
+        <div id="alerts-list"></div>
+      </div>
+
+      <!-- ===== MONTHLY BILLS ===== -->
+      <div class="page" id="page-monthly-bills">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Monthly Bills</div>
+            <div class="page-subtitle">Electricity, water, rent, maids & more</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-monthly-bill')">+ Add Bill</button>
+        </div>
+        <div id="monthly-bills-list"></div>
+      </div>
+
+      <!-- ===== ANNUAL BILLS ===== -->
+      <div class="page" id="page-annual-bills">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Annual Bills</div>
+            <div class="page-subtitle">Building tax, OTT subscriptions, domain renewals & more</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-annual-bill')">+ Add Bill</button>
+        </div>
+        <div id="annual-bills-list"></div>
+      </div>
+
+      <!-- ===== CREDIT CARDS ===== -->
+      <div class="page" id="page-credit-cards">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Credit Cards</div>
+            <div class="page-subtitle">Track statements, due dates and payments</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-credit-card')">+ Add Card</button>
+        </div>
+        <div id="credit-cards-list"></div>
+      </div>
+
+      <!-- ===== INVESTMENTS ===== -->
+      <div class="page" id="page-investments">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Investments</div>
+            <div class="page-subtitle">FD, bonds, shares, mutual funds & more</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-investment')">+ Add Investment</button>
+        </div>
+        <div id="investments-list"></div>
+      </div>
+
+      <!-- ===== INSURANCE ===== -->
+      <div class="page" id="page-insurance">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Insurance</div>
+            <div class="page-subtitle">Life, health, vehicle and more policies</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-insurance')">+ Add Policy</button>
+        </div>
+        <div id="insurance-list"></div>
+      </div>
+
+      <!-- ===== SETTINGS ===== -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <div><div class="page-title">Settings</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">🎨 Appearance</div>
+          <div class="form-group">
+            <label>App Theme</label>
+            <div class="theme-row" style="justify-content:flex-start; flex-wrap:wrap;">
+              <button class="theme-btn" id="theme-system" onclick="setTheme('system',this)">⚙ System</button>
+              <button class="theme-btn" id="theme-light" onclick="setTheme('light',this)">☀ Day Mode</button>
+              <button class="theme-btn" id="theme-dark" onclick="setTheme('dark',this)">🌙 Night Mode</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">🔐 Security</div>
+          <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="openModal('modal-change-pin')">Change PIN</button>
+            <button class="btn btn-secondary" onclick="openModal('modal-change-sq')">Update Security Question</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title">📲 Install App</div>
+          <p class="text-sm text-muted" style="margin-bottom:0.75rem;">Install RupeeTrack on your device for offline access and faster loading.</p>
+          <button class="btn btn-primary" id="install-btn-settings" onclick="installApp()">⬇ Install RupeeTrack</button>
+          <p class="text-xs text-muted mt-sm" id="install-note">Tap to install on your device.</p>
+        </div>
+        <div class="card">
+          <div class="section-title" style="color:#e05555;">🗑 Danger Zone</div>
+          <p class="text-sm text-muted" style="margin-bottom:0.75rem;">Permanently delete all app data. This cannot be undone.</p>
+          <button class="btn btn-danger" onclick="openModal('modal-delete-all')">Delete All Data</button>
+        </div>
+      </div>
+
+      <!-- ===== BACKUP ===== -->
+      <div class="page" id="page-backup">
+        <div class="page-header">
+          <div><div class="page-title">Backup & Restore</div>
+          <div class="page-subtitle">Export your data as JSON or import a backup</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">⬆ Export Backup</div>
+          <p class="text-sm text-muted" style="margin-bottom:0.75rem;">Download all your data as an encrypted JSON file to your device.</p>
+          <button class="btn btn-primary" onclick="exportData()">⬇ Download Backup</button>
+        </div>
+        <div class="card">
+          <div class="section-title">⬇ Restore Backup</div>
+          <p class="text-sm text-muted" style="margin-bottom:0.75rem;">Import a previously exported RupeeTrack backup file.</p>
+          <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)"/>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📂 Choose Backup File</button>
+          <p class="text-xs text-muted mt-sm">⚠ This will overwrite all existing data.</p>
+        </div>
+      </div>
+
+    </main>
   </div>
 
-  <div id="forgotScreen" class="hidden">
-    <h2>Security Question</h2>
-    <p id="securityQuestion"></p>
-    <input type="text" id="securityAnswer" placeholder="Your answer">
-    <button onclick="verifySecurity()">Submit</button>
-    <button onclick="backToLogin()">Back</button>
+  <!-- Mobile bottom nav -->
+  <nav class="mobile-nav">
+    <div class="mobile-nav-items">
+      <button class="mobile-nav-item active" onclick="showPage('dashboard',this)" data-page="dashboard"><span class="mn-icon">🏠</span>Home</button>
+      <button class="mobile-nav-item" onclick="showPage('alerts',this)" data-page="alerts"><span class="mn-icon">🔔</span>Alerts</button>
+      <button class="mobile-nav-item" onclick="showPage('monthly-bills',this)" data-page="monthly-bills"><span class="mn-icon">📅</span>Monthly</button>
+      <button class="mobile-nav-item" onclick="showPage('annual-bills',this)" data-page="annual-bills"><span class="mn-icon">📆</span>Annual</button>
+      <button class="mobile-nav-item" onclick="showPage('credit-cards',this)" data-page="credit-cards"><span class="mn-icon">💳</span>Cards</button>
+      <button class="mobile-nav-item" onclick="showPage('investments',this)" data-page="investments"><span class="mn-icon">📈</span>Invest</button>
+      <button class="mobile-nav-item" onclick="showPage('insurance',this)" data-page="insurance"><span class="mn-icon">🛡</span>Insurance</button>
+      <button class="mobile-nav-item" onclick="showPage('settings',this)" data-page="settings"><span class="mn-icon">⚙</span>Settings</button>
+    </div>
+  </nav>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Monthly Bill Modal -->
+<div class="modal-overlay" id="modal-monthly-bill">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="monthly-bill-modal-title">Add Monthly Bill</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-monthly-bill')">✕</button>
+    </div>
+    <input type="hidden" id="monthly-bill-edit-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Utility / Bill Name *</label>
+        <input type="text" id="mb-name" placeholder="e.g. Electricity Bill"/>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="mb-category">
+          <option>Electricity</option>
+          <option>Water</option>
+          <option>Gas</option>
+          <option>House Rent</option>
+          <option>Maid / Help</option>
+          <option>Internet</option>
+          <option>Mobile Recharge</option>
+          <option>Society Maintenance</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Bill Generated on (day of month)</label>
+        <input type="number" id="mb-generated-day" placeholder="e.g. 1" min="1" max="31"/>
+      </div>
+      <div class="form-group">
+        <label>Monthly Due Date (day)</label>
+        <input type="number" id="mb-due-day" placeholder="e.g. 15" min="1" max="31"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Remind Before (days)</label>
+        <input type="number" id="mb-remind-days" placeholder="e.g. 5" min="1" max="30" value="5"/>
+      </div>
+      <div class="form-group">
+        <label>Approx. Monthly Amount (₹)</label>
+        <input type="number" id="mb-amount" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Last Payment Date</label>
+        <input type="date" id="mb-last-date"/>
+      </div>
+      <div class="form-group">
+        <label>Last Payment Amount (₹)</label>
+        <input type="number" id="mb-last-amount" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="mb-payment-mode">
+          <option>UPI</option>
+          <option>Net Banking</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+          <option>Cash</option>
+          <option>Auto Debit</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="mb-notes" placeholder="Any remarks"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-monthly-bill')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMonthlyBill()">Save Bill</button>
+    </div>
   </div>
+</div>
 
-  <div id="mainApp" class="hidden">
-    <h2>Dashboard</h2>
-    <button onclick="showSection('monthly')">Monthly Utilities</button>
-    <button onclick="showSection('annual')">Annual Bills</button>
-    <button onclick="showSection('credit')">Credit Cards</button>
-    <button onclick="showSection('invest')">Investments</button>
-    
-    <button onclick="deleteAllData()">Delete All Data</button>
-    <button onclick="installApp()">Install App</button>
+<!-- Annual Bill Modal -->
+<div class="modal-overlay" id="modal-annual-bill">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="annual-bill-modal-title">Add Annual Bill</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-annual-bill')">✕</button>
+    </div>
+    <input type="hidden" id="annual-bill-edit-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Bill Name *</label>
+        <input type="text" id="ab-name" placeholder="e.g. Building Tax"/>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="ab-category">
+          <option>Property Tax</option>
+          <option>OTT Subscription</option>
+          <option>Domain Renewal</option>
+          <option>Club Membership</option>
+          <option>Vehicle Tax</option>
+          <option>Professional Tax</option>
+          <option>Annual Maintenance</option>
+          <option>Software Subscription</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Due Date (every year)</label>
+        <input type="date" id="ab-due-date"/>
+      </div>
+      <div class="form-group">
+        <label>Remind Before (days)</label>
+        <input type="number" id="ab-remind-days" placeholder="30" min="1" max="90" value="30"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Annual Amount (₹)</label>
+        <input type="number" id="ab-amount" placeholder="0"/>
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="ab-payment-mode">
+          <option>UPI</option>
+          <option>Net Banking</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+          <option>Cash</option>
+          <option>Auto Debit</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Last Payment Date</label>
+        <input type="date" id="ab-last-date"/>
+      </div>
+      <div class="form-group">
+        <label>Last Payment Amount (₹)</label>
+        <input type="number" id="ab-last-amount" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <input type="text" id="ab-notes" placeholder="Any remarks"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-annual-bill')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAnnualBill()">Save Bill</button>
+    </div>
   </div>
+</div>
 
-  <div id="sections" class="hidden"></div>
+<!-- Credit Card Modal -->
+<div class="modal-overlay" id="modal-credit-card">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="credit-card-modal-title">Add Credit Card</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-credit-card')">✕</button>
+    </div>
+    <input type="hidden" id="cc-edit-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Card Name / Nickname *</label>
+        <input type="text" id="cc-name" placeholder="e.g. HDFC Regalia"/>
+      </div>
+      <div class="form-group">
+        <label>Bank / Issuer</label>
+        <input type="text" id="cc-bank" placeholder="e.g. HDFC Bank"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Last 4 digits</label>
+        <input type="text" id="cc-last4" placeholder="XXXX" maxlength="4"/>
+      </div>
+      <div class="form-group">
+        <label>Credit Limit (₹)</label>
+        <input type="number" id="cc-limit" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Statement Date (day of month)</label>
+        <input type="number" id="cc-statement-day" placeholder="e.g. 20" min="1" max="31"/>
+      </div>
+      <div class="form-group">
+        <label>Payment Due Date (day of month)</label>
+        <input type="number" id="cc-due-day" placeholder="e.g. 8" min="1" max="31"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Remind Before (days)</label>
+        <input type="number" id="cc-remind-days" value="5" min="1" max="30"/>
+      </div>
+      <div class="form-group">
+        <label>Current Outstanding (₹)</label>
+        <input type="number" id="cc-outstanding" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Last Payment Date</label>
+        <input type="date" id="cc-last-date"/>
+      </div>
+      <div class="form-group">
+        <label>Last Payment Amount (₹)</label>
+        <input type="number" id="cc-last-amount" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes / Rewards Info</label>
+      <input type="text" id="cc-notes" placeholder="e.g. 2x rewards on dining"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-credit-card')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCreditCard()">Save Card</button>
+    </div>
+  </div>
+</div>
 
-  <script src="app.js"></script>
+<!-- Investment Modal -->
+<div class="modal-overlay" id="modal-investment">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="investment-modal-title">Add Investment</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-investment')">✕</button>
+    </div>
+    <input type="hidden" id="inv-edit-id"/>
+    <div class="form-group">
+      <label>Investment Type *</label>
+      <div class="inv-type-grid" id="inv-type-grid">
+        <button class="inv-type-btn active" onclick="selectInvType(this,'FD')">🏦 Fixed Deposit</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'MF')">📊 Mutual Fund</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'Stocks')">📈 Shares/Stocks</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'Bond')">📜 Bonds</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'PPF')">🪙 PPF</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'NPS')">🏛 NPS</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'Gold')">🥇 Gold/SGB</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'RD')">💰 Recurring Deposit</button>
+        <button class="inv-type-btn" onclick="selectInvType(this,'Other')">📦 Other</button>
+      </div>
+      <input type="hidden" id="inv-type" value="FD"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Investment Name / Description *</label>
+        <input type="text" id="inv-name" placeholder="e.g. SBI FD 7.5%"/>
+      </div>
+      <div class="form-group">
+        <label>Institution / Platform</label>
+        <input type="text" id="inv-institution" placeholder="e.g. SBI, Zerodha"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Invested Amount (₹)</label>
+        <input type="number" id="inv-amount" placeholder="0"/>
+      </div>
+      <div class="form-group">
+        <label>Current Value (₹)</label>
+        <input type="number" id="inv-current-value" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="inv-start-date"/>
+      </div>
+      <div class="form-group">
+        <label>Maturity / End Date</label>
+        <input type="date" id="inv-maturity-date"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Interest / Return Rate (%)</label>
+        <input type="number" id="inv-rate" placeholder="e.g. 7.5" step="0.01"/>
+      </div>
+      <div class="form-group">
+        <label>Remind Before Maturity (days)</label>
+        <input type="number" id="inv-remind-days" value="30" min="1"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes / Account Number</label>
+      <input type="text" id="inv-notes" placeholder="Any reference or note"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-investment')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvestment()">Save Investment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Insurance Modal -->
+<div class="modal-overlay" id="modal-insurance">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="insurance-modal-title">Add Insurance Policy</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-insurance')">✕</button>
+    </div>
+    <input type="hidden" id="ins-edit-id"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Policy Name *</label>
+        <input type="text" id="ins-name" placeholder="e.g. LIC Jeevan Anand"/>
+      </div>
+      <div class="form-group">
+        <label>Insurance Type</label>
+        <select id="ins-type">
+          <option>Life Insurance</option>
+          <option>Health Insurance</option>
+          <option>Term Insurance</option>
+          <option>Vehicle Insurance</option>
+          <option>Home Insurance</option>
+          <option>Travel Insurance</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Insurance Company</label>
+        <input type="text" id="ins-company" placeholder="e.g. LIC, HDFC Life"/>
+      </div>
+      <div class="form-group">
+        <label>Policy Number</label>
+        <input type="text" id="ins-policy-no" placeholder="Policy number"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sum Assured / Cover (₹)</label>
+        <input type="number" id="ins-sum" placeholder="0"/>
+      </div>
+      <div class="form-group">
+        <label>Premium Amount (₹)</label>
+        <input type="number" id="ins-premium" placeholder="0"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Premium Frequency</label>
+        <select id="ins-frequency">
+          <option>Monthly</option>
+          <option>Quarterly</option>
+          <option>Half-Yearly</option>
+          <option>Annually</option>
+          <option>Single Premium</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Remind Before Due (days)</label>
+        <input type="number" id="ins-remind-days" value="30" min="1"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Next Premium Due Date *</label>
+        <input type="date" id="ins-next-due"/>
+      </div>
+      <div class="form-group">
+        <label>Policy Expiry Date</label>
+        <input type="date" id="ins-expiry"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Policy Start Date</label>
+        <input type="date" id="ins-start-date"/>
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="ins-payment-mode">
+          <option>ECS/Auto Debit</option>
+          <option>Net Banking</option>
+          <option>UPI</option>
+          <option>Credit Card</option>
+          <option>Cash</option>
+          <option>Cheque</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nominee / Notes</label>
+      <input type="text" id="ins-notes" placeholder="Nominee name or notes"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-insurance')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInsurance()">Save Policy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div class="modal-overlay" id="modal-change-pin">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Change PIN</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-change-pin')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Current PIN</label>
+      <input type="password" id="cp-current" placeholder="Current 4-digit PIN" maxlength="4"/>
+    </div>
+    <div class="form-group">
+      <label>New PIN</label>
+      <input type="password" id="cp-new" placeholder="New 4-digit PIN" maxlength="4"/>
+    </div>
+    <div class="form-group">
+      <label>Confirm New PIN</label>
+      <input type="password" id="cp-confirm" placeholder="Confirm new PIN" maxlength="4"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-change-pin')">Cancel</button>
+      <button class="btn btn-primary" onclick="changePIN()">Update PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Security Question Modal -->
+<div class="modal-overlay" id="modal-change-sq">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Update Security Question</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-change-sq')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Verify Current PIN</label>
+      <input type="password" id="sq-pin-verify" placeholder="Current PIN" maxlength="4"/>
+    </div>
+    <div class="form-group">
+      <label>Security Question</label>
+      <select id="sq-question-new">
+        <option>What is your mother's maiden name?</option>
+        <option>What was the name of your first pet?</option>
+        <option>What city were you born in?</option>
+        <option>What is your favourite childhood memory?</option>
+        <option>What was your first school's name?</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Answer</label>
+      <input type="text" id="sq-answer-new" placeholder="Your answer"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-change-sq')">Cancel</button>
+      <button class="btn btn-primary" onclick="changeSecurityQuestion()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete All Modal -->
+<div class="modal-overlay" id="modal-delete-all">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#e05555;">⚠ Delete All Data</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-delete-all')">✕</button>
+    </div>
+    <p style="color:var(--text);margin-bottom:0.75rem;">This will <strong>permanently delete</strong> all your bills, investments, insurance policies, and settings from this device. This action <strong>cannot be undone.</strong></p>
+    <p class="text-sm" style="color:var(--text2);margin-bottom:1rem;">Type <strong>DELETE</strong> to confirm.</p>
+    <div class="form-group">
+      <input type="text" id="delete-confirm-text" placeholder="Type DELETE here"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete-all')">Cancel</button>
+      <button class="btn btn-danger" onclick="deleteAllData()">Delete Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Logout -->
+<div class="modal-overlay" id="modal-logout">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title">Lock App?</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-logout')">✕</button>
+    </div>
+    <p style="color:var(--text2);">You will be taken back to the PIN screen.</p>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-logout')">Cancel</button>
+      <button class="btn btn-primary" onclick="logout()">Lock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete item confirm -->
+<div class="modal-overlay" id="modal-delete-item">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#e05555;">Delete Entry</div>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal('modal-delete-item')">✕</button>
+    </div>
+    <p style="color:var(--text2);" id="delete-item-msg">Are you sure you want to delete this entry?</p>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete-item')">Cancel</button>
+      <button class="btn btn-danger" onclick="executeDeleteItem()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
 </body>
 </html>
